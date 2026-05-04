@@ -7,10 +7,12 @@ exports.validateVendor = async (req, res) => {
     const { companyCode, vendorCode, orderType, orderNumber } = req.body;
 
     connection = await oracledb.getConnection({
-      user: "SCOTT",
-      password: "TIGER",
-      connectString: "127.0.0.1:1521/xe",
-    });
+  user: "SCOTT", 
+  password: "TIGER", 
+  // Replace 192.168.8.100 with the HOST IP found in your tnsnames.ora
+  // Replace 'xe' with the SERVICE_NAME found in your tnsnames.ora
+  connectString: "192.168.8.100:1521/xe", 
+});
 
     // TRUNC(SYSDATE) ka matlab hai aaj ki date (Time 00:00:00 ke saath)
     // Agar EXPIRE_DATE aaj ya aaj ke baad ki hai, tabhi row milegi.
