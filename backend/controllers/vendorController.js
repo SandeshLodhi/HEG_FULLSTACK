@@ -1,52 +1,56 @@
-const fs = require("fs");
-const path = require("path");
+const oracledb = require('oracledb');
 
-const filePath = path.join(__dirname, "../data/vendors.json");
+exports.validateVendor = async (req, res) => {
+    let connection;
 
-exports.validateVendor = (req, res) => {
-const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    try {
+        const { companyCode, vendorCode, orderType, orderNumber } = req.body;
 
-const { companyName, vendorCode, orderType, orderNumber } = req.body;
+        connection = await oracledb.getConnection({
+            user: "SCOTT",
+            password: "TIGER",
+            connectString: "127.0.0.1:1521/xe"
+        });
 
+        // TRUNC(SYSDATE) ka matlab hai aaj ki date (Time 00:00:00 ke saath)
+        // Agar EXPIRE_DATE aaj ya aaj ke baad ki hai, tabhi row milegi.
+        const sql = `
+            SELECT COMPANYCODE, VENDORCODE, ORDERTYPE, ORDERNUMBER, TO_CHAR(EXPIRE_DATE, 'DD-MON-YYYY') as EXP_DATE
+            FROM VENDOR 
+            WHERE UPPER(COMPANYCODE) = UPPER(:companyCode)
+              AND VENDORCODE = :vendorCode
+              AND UPPER(ORDERTYPE) = UPPER(:orderType)
+              AND ORDERNUMBER = :orderNumber
+              AND EXPIRE_DATE >= TRUNC(SYSDATE)
+        `;
 
-const companyData = data.filter(
-  (item) =>
-    item.companyName.toLowerCase() === companyName.toLowerCase()
-);
+        const result = await connection.execute(sql, {
+            companyCode,
+            vendorCode,
+            orderType,
+            orderNumber
+        });
 
-if (companyData.length === 0) {
-  return res.json({ success: false, message: "Company not found" });
-}
+        // Validation Results
+        if (result.rows.length === 0) {
+            return res.json({ 
+                success: false, 
+                message: "Validation Failed: Data mismatch or Vendor has EXPIRED! ❌" 
+            });
+        }
 
+        return res.json({
+            success: true,
+            message: "Validation Successful! Vendor is active. ✅",
+            expiry: result.rows[0][4] // EXPIRE_DATE dikhane ke liye
+        });
 
-const vendorData = companyData.filter(
-  (item) => item.vendorCode === Number(vendorCode)
-);
-
-if (vendorData.length === 0) {
-  return res.json({ success: false, message: "Invalid Vendor Code" });
-}
-
-
-const orderTypeData = vendorData.filter(
-  (item) => item.orderType === orderType
-);
-
-if (orderTypeData.length === 0) {
-  return res.json({ success: false, message: "Invalid Order Type" });
-}
-
-
-const finalMatch = orderTypeData.find(
-  (item) => item.orderNumber === Number(orderNumber)
-);
-
-if (!finalMatch) {
-  return res.json({ success: false, message: "Invalid Order Number" });
-}
-
-return res.json({
-  success: true,
-  message: "All validations passed ✅"
-});
+    } catch (err) {
+        console.error("DB Error:", err);
+        return res.status(500).json({ success: false, message: "Database Error" });
+    } finally {
+        if (connection) {
+            await connection.close();
+        }
+    }
 };

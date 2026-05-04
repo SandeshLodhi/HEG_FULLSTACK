@@ -1,62 +1,82 @@
 [
   {
-    "companyName": "TCS",
+    "companyCode": "TC012",
     "vendorCode": 1234,
     "orderType": "workOrder",
     "orderNumber": 5678
   },
    {
-    "companyName": "TCS",
+    "companyCode": "TC012",
     "vendorCode": 1234,
     "orderType": "purchaseOrder",
     "orderNumber": 5679
   },
   {
-    "companyName": "TCS",
+    "companyCode": "TC012",
     "vendorCode": 4321,
     "orderType": "salesOrder",
     "orderNumber": 8765
   },
    {
-    "companyName": "TCS",
+    "companyCode": "TC012",
     "vendorCode": 1122,
     "orderType": "loi",
     "orderNumber": 3344
   },
    {
-    "companyName": "NPL",
+    "companyCode": "NP213",
     "vendorCode":   9888,
     "orderType": "workOrder",
     "orderNumber": 8761
   },
    {
-    "companyName": "NPL",
+    "companyCode": "NP213",
     "vendorCode":   9981,
     "orderType": "purchaseOrder",
     "orderNumber": 8761
   }
   , {
-    "companyName": "NPL",
+    "companyCode": "NP213",
     "vendorCode":   9988,
     "orderType": "salesOrder",
     "orderNumber": 8761
   }
   , {
-    "companyName": "NPL",
+    "companyCode": "NP213",
     "vendorCode":   9948,
     "orderType": "loi",
     "orderNumber": 8721
   }
   ,
    {
-    "companyName": "Hexa",
+    "companyCode": "H3212",
     "vendorCode": 1100,
     "orderType": "purchaseOrder",
     "orderNumber": 8265
+  },
+   {
+    "companyCode": "H3212",
+    "vendorCode": 1180,
+    "orderType": "workOrder",
+    "orderNumber": 8265
+  },
+   {
+    "companyCode": "H3212",
+    "vendorCode": 8100,
+    "orderType": "salesOrder",
+    "orderNumber": 8265
+  },
+   {
+    "companyCode": "H3212",
+    "vendorCode": 1500,
+    "orderType": "loi",
+    "orderNumber": 8265
   }
   ,
+  
+  
    {
-    "companyName": "TATA",
+    "companyCode": "TA123",
     "vendorCode": 5544,
     "orderType": "purchaseOrder",
     "orderNumber": 8984
