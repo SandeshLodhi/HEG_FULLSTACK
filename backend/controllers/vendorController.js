@@ -1,57 +1,39 @@
-const oracledb = require("oracledb");
+const connection = require("../db");  
 
-exports.validateVendor = async (req, res) => {
-  let connection;
+exports.validateVendor = (req, res) => {
+  const { companyCode, vendorCode, orderType, orderNumber } = req.body;
 
-  try {
-    const { companyCode, vendorCode, orderType, orderNumber } = req.body;
+  const query = `
+    SELECT * FROM vendor_data 
+    WHERE LOWER(companyCode) = LOWER(?) 
+    AND vendorCode = ?
+    AND orderType = ?
+    AND orderNumber = ?
+  `;
 
-    connection = await oracledb.getConnection({
-  user: "SCOTT", 
-  password: "TIGER", 
-  // Replace 192.168.8.100 with the HOST IP found in your tnsnames.ora
-  // Replace 'xe' with the SERVICE_NAME found in your tnsnames.ora
-  connectString: "192.168.8.100:1521/xe", 
-});
+  connection.query(
+    query,
+    [companyCode, vendorCode, orderType, orderNumber],
+    (err, result) => {
+      if (err) {
+        console.log("❌ SQL ERROR:", err);
+        return res.status(500).json({
+          success: false,
+          message: "Database error"
+        });
+      }
 
-    // TRUNC(SYSDATE) ka matlab hai aaj ki date (Time 00:00:00 ke saath)
-    // Agar EXPIRE_DATE aaj ya aaj ke baad ki hai, tabhi row milegi.
-    const sql = `
-            SELECT COMPANYCODE, VENDORCODE, ORDERTYPE, ORDERNUMBER, TO_CHAR(EXPIRE_DATE, 'DD-MON-YYYY') as EXP_DATE
-            FROM VENDOR 
-            WHERE UPPER(COMPANYCODE) = UPPER(:companyCode)
-              AND VENDORCODE = :vendorCode
-              AND UPPER(ORDERTYPE) = UPPER(:orderType)
-              AND ORDERNUMBER = :orderNumber
-              AND EXPIRE_DATE >= TRUNC(SYSDATE)
-        `;
+      if (result.length === 0) {
+        return res.json({
+          success: false,
+          message: "Invalid details ❌"
+        });
+      }
 
-    const result = await connection.execute(sql, {
-      companyCode,
-      vendorCode,
-      orderType,
-      orderNumber,
-    });
-
-    // Validation Results
-    if (result.rows.length === 0) {
       return res.json({
-        success: false,
-        message: "Validation Failed: Data mismatch or Vendor has EXPIRED! ❌",
+        success: true,
+        message: "All validations passed ✅"
       });
     }
-
-    return res.json({
-      success: true,
-      message: "Validation Successful! Vendor is active. ✅",
-      expiry: result.rows[0][4], // EXPIRE_DATE dikhane ke liye
-    });
-  } catch (err) {
-    console.error("DB Error:", err);
-    return res.status(500).json({ success: false, message: "Database Error" });
-  } finally {
-    if (connection) {
-      await connection.close();
-    }
-  }
+  );
 };

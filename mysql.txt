@@ -1,0 +1,62 @@
+const mysql = require("mysql2");
+
+// ✅ DB connection
+const connection = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "root",
+  database: "vendor"
+});
+
+connection.connect((err) => {
+  if (err) {
+    console.log("❌ DB Error:", err);
+    return;
+  }
+  console.log("✅ Connected to MySQL");
+});
+
+
+// ✅ Controller function
+const validateVendor = (req, res) => {
+  const { companyCode, vendorCode, orderType, orderNumber } = req.body;
+
+  const sql = `
+    SELECT * FROM vendordata
+    WHERE companyCode = ?
+      AND vendorCode = ?
+      AND orderType = ?
+      AND orderNumber = ?
+      AND expire_date >= CURDATE()
+  `;
+
+  connection.query(
+    sql,
+    [companyCode, vendorCode, orderType, orderNumber],
+    (err, results) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ success: false });
+      }
+
+      if (results.length === 0) {
+        return res.json({
+          success: false,
+          message: "Validation Failed ❌"
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: "Validation Successful ✅",
+        data: results[0]
+      });
+    }
+  );
+};
+
+
+// ✅ IMPORTANT: Export correctly
+module.exports = {
+  validateVendor
+};
